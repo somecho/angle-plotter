@@ -1,4 +1,4 @@
-const RECT_SIZE = 12;
+const RECT_SIZE = 14;
 
 const canvas = document.createElement("canvas")
 canvas.id = "myCanvas"
@@ -36,21 +36,15 @@ let edges = [];
  * @returns {(undefined | GraphNode)}
  */
 function getSelectedNode(mouseX, mouseY){
-  let shortestDist = 999999
-  let result = undefined
   for(let i = 0; i < nodes.length ; i++){
     let {x,y} = nodes[i]
     const dx = Math.abs(x-mouseX)
     const dy = Math.abs(y-mouseY)
     if(dx < (RECT_SIZE*0.5) && dy < (RECT_SIZE*0.5)){
-      let totalDist = dx + dy;
-      if(totalDist < shortestDist){
-        shortestDist = totalDist
-        result = i 
-      }
+      return i
     }
   }
-  return result
+  return undefined
 }
 
 function setup(){
