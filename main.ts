@@ -1,38 +1,16 @@
 const RECT_SIZE = 14;
+let nodes: GraphNode[] = [];
+let edges: Edge[] = [];
 
 const canvas = document.createElement("canvas")
-canvas.id = "myCanvas"
+const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 document.body.appendChild(canvas)
+canvas.addEventListener('mouseup', onMouseUp)
+setup()
 
-/**
- * @typedef {Object} GraphNode
- * @property {number} x 
- * @property {number} y
- * @property {boolean} [active]
- */
-
-/**
- * @typedef {Object} Edge
- * @property {number} idxA
- * @property {number} idxB
- */
-
-const ctx = canvas.getContext("2d")
-
-/** @type {GraphNode[]} */
-let nodes = [];
-
-/** @type {Edge[]} */
-let edges = [];
-
-/**
- * @param {number} mouseX
- * @param {number} mouseY
- * @returns {(undefined | GraphNode)}
- */
-function getSelectedNode(mouseX, mouseY) {
+function getSelectedNode(mouseX: number, mouseY: number): Id | undefined {
   for (let i = 0; i < nodes.length; i++) {
     let { x, y } = nodes[i]
     const dx = Math.abs(x - mouseX)
@@ -49,7 +27,7 @@ function setup() {
   ctx.fillRect(0, 0, window.innerWidth, window.innerHeight)
 }
 
-function getLastActiveNodeIndex() {
+function getLastActiveNodeIndex(): Id | undefined {
   for (let i = 0; i < nodes.length; i++) {
     if (nodes[i].active) {
       return i
@@ -67,17 +45,15 @@ function findPivots() {
     .filter(group => group.edges.length > 1)
 }
 
-function onMouseUp(e) {
-  let idx = getSelectedNode(e.clientX, e.clientY)
+function onMouseUp(e: MouseEvent) {
+  const idx = getSelectedNode(e.clientX, e.clientY)
   const lastActive = getLastActiveNodeIndex()
-  for (let i = 0; i < nodes.length; i++) {
-    nodes[i].active = false;
-  }
+  nodes.forEach(node => node.active = false)
   if (idx == undefined) {
     if (nodes.length != 0) {
       edges.push({
         idxA: nodes.length,
-        idxB: lastActive,
+        idxB: lastActive as Id,
       })
     }
     nodes.push({ x: e.clientX, y: e.clientY, active: true })
@@ -89,7 +65,7 @@ function onMouseUp(e) {
     if (!edgeExists) {
       edges.push({
         idxA: idx,
-        idxB: lastActive
+        idxB: lastActive as Id
       })
     }
     nodes[idx].active = true;
@@ -122,50 +98,43 @@ function renderNodes() {
   })
 }
 
-/**
- * 
- * @param {GraphNode} source 
- * @param {GraphNode} target 
- * @param {number} anchor 
- */
-function getAngleOfLine(target, source) {
+function getAngleOfLine(target: GraphNode, source: GraphNode): AngleRadians {
   const x = target.x - source.x
   const y = target.y - source.y
   return Math.atan2(y, x) + Math.PI
 }
 
 function renderAngles() {
+  ctx.strokeStyle = "#ff8888"
   const groups = findPivots()
   groups.forEach(({ edges, anchor }) => {
-    //case where only two edges
+    const sortedEdges = edges.map(edge =>
+      edge.idxA == anchor ? edge : { idxA: edge.idxB, idxB: edge.idxA }
+    )
+    let edgeAngles = sortedEdges
+      .map(edge => getAngleOfLine(nodes[edge.idxA], nodes[edge.idxB]))
+      .sort((a, b) => a - b)
+
     if (edges.length == 2) {
-      const sortedEdges = edges.map(edge => {
-        if (edge.idxA == anchor) {
-          return edge
-        } else {
-          return {
-            idxA: edge.idxB,
-            idxB: edge.idxA,
-          }
-        }
-      })
-      const edgeAngles = sortedEdges
-        .map(edge => getAngleOfLine(nodes[edge.idxA], nodes[edge.idxB]))
-        .sort((a, b) => a - b)
-      let startAngle = 0
       const dTheta = Math.abs(edgeAngles[0] - edgeAngles[1])
       const dThetaPeriod = Math.abs(edgeAngles[1] - (edgeAngles[0] + Math.PI * 2))
       if (dThetaPeriod < dTheta) {
-        startAngle = 1
+        const temp = edgeAngles[1]
+        edgeAngles[1] = edgeAngles[0]
+        edgeAngles[0] = temp
       }
+    } else {
       ctx.beginPath()
-      ctx.strokeStyle = "#ff8888"
-      ctx.arc(nodes[anchor].x, nodes[anchor].y, 24, edgeAngles[startAngle], edgeAngles[1 - startAngle])
+      ctx.arc(nodes[anchor].x, nodes[anchor].y, 24, edgeAngles[edgeAngles.length - 1], edgeAngles[0])
+      ctx.stroke()
+    }
+
+    for (let i = 0; i < edgeAngles.length - 1; i++) {
+      ctx.beginPath()
+      ctx.arc(nodes[anchor].x, nodes[anchor].y, 24, edgeAngles[i], edgeAngles[i + 1])
       ctx.stroke()
     }
   })
 }
 
-setup()
 
-canvas.addEventListener('mouseup', onMouseUp)
