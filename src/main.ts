@@ -130,11 +130,14 @@ function renderAngles() {
     }
 
     for (let i = 0; i < edgeAngles.length - 1; i++) {
+      let angleDiff = edgeAngles[i + 1] - edgeAngles[i]
+      if (angleDiff < 0) {
+        angleDiff += Math.PI
+      }
+      const radius = Math.pow(1 - (angleDiff / (Math.PI * 2)), 2.0) * 24 + 10
       ctx.beginPath()
-      ctx.arc(nodes[anchor].x, nodes[anchor].y, 24, edgeAngles[i], edgeAngles[i + 1])
+      ctx.arc(nodes[anchor].x, nodes[anchor].y, radius, edgeAngles[i], edgeAngles[i + 1])
       ctx.stroke()
     }
   })
 }
-
-
