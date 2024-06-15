@@ -1,5 +1,4 @@
 # Todo 
-- render angles text
-- scale angle to magnitude
-- add upload image 
-- add download canvas 
+- download canvas as image
+- canvas sizing to match css .column sizing
+- fit image within size constraints
