@@ -4,23 +4,29 @@ let edges: Edge[] = [];
 let img = new Image();
 const MAIN_COL = "#fa0a76"
 
+enum Orientation { Portrait, Landscape }
+
 const canvas = document.createElement("canvas")
+document.querySelector("#app")?.appendChild(canvas)
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-if (window.innerWidth > 720) {
-  canvas.width = 720
+if (window.innerWidth > 860) {
+  canvas.width = 860
 } else if (window.innerWidth < 320) {
   canvas.width = 320
 } else {
   canvas.width = window.innerWidth * 0.95;
 }
-canvas.height = 480
+canvas.height = window.innerHeight - canvas.getBoundingClientRect().top - (window.innerHeight * 0.02)
 ctx.textBaseline = "middle"
 ctx.textAlign = "center"
 ctx.font = "14px Silkscreen"
 
-document.querySelector("#app")?.appendChild(canvas)
 canvas.addEventListener('mouseup', onMouseUp)
 setup()
+
+function getImageOrientation(img: HTMLImageElement): Orientation {
+  return img.width > img.height ? Orientation.Landscape : Orientation.Portrait
+}
 
 document.querySelector("#upload-btn")?.addEventListener("change", (e) => {
   const reader = new FileReader()
@@ -29,12 +35,16 @@ document.querySelector("#upload-btn")?.addEventListener("change", (e) => {
     img.addEventListener("load", (e) => {
       nodes = []
       edges = []
-      canvas.width = img.width
-      canvas.height = img.height
+      const imageOrientation = getImageOrientation(img)
+      if (imageOrientation == Orientation.Landscape) {
+        canvas.height = (img.height / img.width) * canvas.width
+      } else {
+        canvas.width = (img.width / img.height) * canvas.height
+      }
       ctx.textBaseline = "middle"
       ctx.textAlign = "center"
       ctx.font = "14px Silkscreen"
-      ctx.drawImage(img, 0, 0)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
     })
     img.src = e.target?.result as string
   })
@@ -58,7 +68,7 @@ function setup() {
   if (img.width == 0 && img.height == 0) {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
   }
-  ctx.drawImage(img, 0, 0)
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 }
 
 function getLastActiveNodeIndex(): Id | undefined {

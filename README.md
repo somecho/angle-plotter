@@ -1,4 +1,7 @@
 # Todo 
 - download canvas as image
-- canvas sizing to match css .column sizing
-- fit image within size constraints
+- button to clear nodes
+- undo capability
+- click and drag
+- better interaction (accidentally closing loops)
+- canvas sizing between image uploads
