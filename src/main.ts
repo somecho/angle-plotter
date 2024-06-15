@@ -1,14 +1,19 @@
-const RECT_SIZE = 14;
+const RECT_SIZE = 12;
 let nodes: GraphNode[] = [];
 let edges: Edge[] = [];
 
 const canvas = document.createElement("canvas")
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+canvas.width = 720
+canvas.height = 480
+ctx.textBaseline = "middle"
+ctx.textAlign = "center"
+ctx.font = "12px Silkscreen"
+
 document.body.appendChild(canvas)
 canvas.addEventListener('mouseup', onMouseUp)
 setup()
+
 
 function getSelectedNode(mouseX: number, mouseY: number): Id | undefined {
   for (let i = 0; i < nodes.length; i++) {
@@ -124,20 +129,49 @@ function renderAngles() {
         edgeAngles[0] = temp
       }
     } else {
+      let angleDiff = edgeAngles[0] - edgeAngles[edgeAngles.length - 1]
+      angleDiff += angleDiff < 0 ? Math.PI : 0
+
+      let angleSize = (((edgeAngles[0] - edgeAngles[edgeAngles.length - 1]) / (Math.PI * 2)) * 360)
+      angleSize += angleSize < 0 ? 360 : 0
+
+      const radius = Math.pow(1 - (angleDiff / (Math.PI * 2)), 2.0) * 24 + 10
+      const angleText = `${angleSize.toFixed(1)}°`
+
       ctx.beginPath()
-      ctx.arc(nodes[anchor].x, nodes[anchor].y, 24, edgeAngles[edgeAngles.length - 1], edgeAngles[0])
+      ctx.arc(nodes[anchor].x, nodes[anchor].y, radius, edgeAngles[edgeAngles.length - 1], edgeAngles[0])
       ctx.stroke()
+
+      const textAngle = (edgeAngles[0] - edgeAngles[edgeAngles.length - 1]) * 0.5 + edgeAngles[edgeAngles.length - 1]
+      let textRadius = 36
+      textRadius *= (edgeAngles[0] - edgeAngles[edgeAngles.length - 1]) < 0 ? -1 : 1
+      const textX = Math.cos(textAngle) * textRadius + nodes[anchor].x
+      const textY = Math.sin(textAngle) * textRadius + nodes[anchor].y
+
+      ctx.fillText(angleText, textX, textY)
     }
 
     for (let i = 0; i < edgeAngles.length - 1; i++) {
       let angleDiff = edgeAngles[i + 1] - edgeAngles[i]
-      if (angleDiff < 0) {
-        angleDiff += Math.PI
-      }
+      angleDiff += angleDiff < 0 ? Math.PI : 0
+
+      let angleSize = (((edgeAngles[i + 1] - edgeAngles[i]) / (Math.PI * 2)) * 360)
+      angleSize += angleSize < 0 ? 360 : 0
+
       const radius = Math.pow(1 - (angleDiff / (Math.PI * 2)), 2.0) * 24 + 10
+      const angleText = `${angleSize.toFixed(1)}°`
+
       ctx.beginPath()
       ctx.arc(nodes[anchor].x, nodes[anchor].y, radius, edgeAngles[i], edgeAngles[i + 1])
       ctx.stroke()
+
+      const textAngle = (edgeAngles[i + 1] - edgeAngles[i]) * 0.5 + edgeAngles[i]
+      let textRadius = 36
+      textRadius *= (edgeAngles[i + 1] - edgeAngles[i]) < 0 ? -1 : 1
+      const textX = Math.cos(textAngle) * textRadius + nodes[anchor].x
+      const textY = Math.sin(textAngle) * textRadius + nodes[anchor].y
+
+      ctx.fillText(angleText, textX, textY)
     }
   })
 }
