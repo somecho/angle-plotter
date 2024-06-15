@@ -1,4 +1,4 @@
-const RECT_SIZE = 10;
+const RECT_SIZE = 6;
 let nodes: GraphNode[] = [];
 let edges: Edge[] = [];
 let img = new Image();
@@ -6,7 +6,13 @@ const MAIN_COL = "#fa0a76"
 
 const canvas = document.createElement("canvas")
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-canvas.width = 720
+if (window.innerWidth > 720) {
+  canvas.width = 720
+} else if (window.innerWidth < 320) {
+  canvas.width = 320
+} else {
+  canvas.width = window.innerWidth * 0.95;
+}
 canvas.height = 480
 ctx.textBaseline = "middle"
 ctx.textAlign = "center"
