@@ -19,17 +19,38 @@ if (window.innerWidth > 860) {
 canvas.height = window.innerHeight - canvas.getBoundingClientRect().top - (window.innerHeight * 0.02)
 ctx.textBaseline = "middle"
 ctx.textAlign = "center"
+
+//make sure font is loaded for rendering
+const font = new FontFace('Silkscreen', 'url(assets/Silkscreen-Regular.ttf)')
+document.fonts.add(font)
+font.load().then(() => {
+  console.log("LOAD SILKSCREEN")
+})
+
 ctx.font = "14px Silkscreen"
+
+document.fonts.onloadingdone = function () {
+  console.log("FONTS FINISHED LOADING")
+}
+
 
 canvas.addEventListener('mouseup', onMouseUp)
 setup()
+
 
 document.querySelector("#clear-btn")?.addEventListener("click", () => {
   nodes = []
   edges = []
   setup()
-
 })
+
+document.querySelector("#save-btn")?.addEventListener("click", () => {
+  const link = document.createElement('a')
+  link.download = 'image.png'
+  link.href = canvas.toDataURL("image/png")
+  link.click()
+})
+
 
 function getImageOrientation(img: HTMLImageElement): Orientation {
   return img.width > img.height ? Orientation.Landscape : Orientation.Portrait
