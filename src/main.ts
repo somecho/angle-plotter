@@ -1,77 +1,57 @@
+import { background, initializeCanvasSize, initializeContext, initializeTextAttributes } from "./lib";
+
+// GLOBALS ////////////////////////////////////////////////////////////////////
 const RECT_SIZE = 6;
+const MAIN_COL = "#fa0a76"
 let nodes: GraphNode[] = [];
 let edges: Edge[] = [];
 let img = new Image();
-const MAIN_COL = "#fa0a76"
 
-enum Orientation { Portrait, Landscape }
 
+// DOM AND CANVAS SETUP ///////////////////////////////////////////////////////
 const canvas = document.createElement("canvas")
-document.querySelector("#app")?.appendChild(canvas)
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-if (window.innerWidth > 860) {
-  canvas.width = 860
-} else if (window.innerWidth < 320) {
-  canvas.width = 320
-} else {
-  canvas.width = window.innerWidth * 0.95;
-}
-canvas.height = window.innerHeight - canvas.getBoundingClientRect().top - (window.innerHeight * 0.08)
-ctx.textBaseline = "middle"
-ctx.textAlign = "center"
+document.querySelector("#app")?.appendChild(canvas)
+initializeCanvasSize(canvas)
+initializeContext(ctx)
 
-//make sure font is loaded for rendering
-const font = new FontFace('Silkscreen', 'url(assets/Silkscreen-Regular.ttf)')
-document.fonts.add(font)
-font.load().then(() => {
-  ctx.font = "14px Silkscreen"
-})
+// EVENTS /////////////////////////////////////////////////////////////////////
+const clearBtn = document.querySelector("#clear-btn") as HTMLElement
+const saveBtn = document.querySelector("#save-btn") as HTMLElement
+const uploadBtn = document.querySelector("#upload-btn") as HTMLElement
 
-canvas.onmouseup = onMouseUp
-setup()
-
-
-document.querySelector("#clear-btn")?.addEventListener("click", () => {
+clearBtn.onclick = () => {
   nodes = []
   edges = []
-  setup()
-})
+  background(ctx, img, canvas.width, canvas.height)
+}
 
-document.querySelector("#save-btn")?.addEventListener("click", () => {
+saveBtn.onclick = () => {
   const link = document.createElement('a')
   link.download = 'image.png'
   link.href = canvas.toDataURL("image/png")
   link.click()
-})
-
-
-function getImageOrientation(img: HTMLImageElement): Orientation {
-  return img.width > img.height ? Orientation.Landscape : Orientation.Portrait
 }
 
-document.querySelector("#upload-btn")?.addEventListener("change", (e) => {
+uploadBtn.onchange = (e) => {
   const reader = new FileReader()
   reader.addEventListener("load", (e) => {
     img = new Image()
-    img.addEventListener("load", (e) => {
-      nodes = []
-      edges = []
-      const imageOrientation = getImageOrientation(img)
-      if (imageOrientation == Orientation.Landscape) {
+    img.addEventListener("load", () => {
+      initializeCanvasSize(canvas)
+      if (img.width > img.height) {
         canvas.height = (img.height / img.width) * canvas.width
       } else {
         canvas.width = (img.width / img.height) * canvas.height
       }
-      ctx.textBaseline = "middle"
-      ctx.textAlign = "center"
-      ctx.font = "14px Silkscreen"
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      initializeTextAttributes(ctx)
+      clearBtn.click()
     })
     img.src = e.target?.result as string
   })
   const target = e.target as HTMLInputElement;
   reader.readAsDataURL((target.files as FileList)[0])
-})
+}
 
 function getSelectedNode(mouseX: number, mouseY: number): Id | undefined {
   for (let i = 0; i < nodes.length; i++) {
@@ -83,13 +63,6 @@ function getSelectedNode(mouseX: number, mouseY: number): Id | undefined {
     }
   }
   return undefined
-}
-
-function setup() {
-  if (img.width == 0 && img.height == 0) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-  }
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 }
 
 function getLastActiveNodeIndex(): Id | undefined {
@@ -110,36 +83,7 @@ function findPivots() {
     .filter(group => group.edges.length > 1)
 }
 
-function onMouseUp(e: MouseEvent) {
-  const idx = getSelectedNode(e.offsetX, e.offsetY)
-  const lastActive = getLastActiveNodeIndex()
-  nodes.forEach(node => node.active = false)
-  if (idx == undefined) {
-    if (nodes.length != 0) {
-      edges.push({
-        idxA: nodes.length,
-        idxB: lastActive as Id,
-      })
-    }
-    nodes.push({ x: e.offsetX, y: e.offsetY, active: true })
-  } else {
-    const edgeExists = edges.find((edge) => {
-      return (edge.idxA == idx && edge.idxB == lastActive) ||
-        (edge.idxA == lastActive && edge.idxB == idx)
-    })
-    if (!edgeExists) {
-      edges.push({
-        idxA: idx,
-        idxB: lastActive as Id
-      })
-    }
-    nodes[idx].active = true;
-  }
-  setup()
-  renderEdges()
-  renderNodes()
-  renderAngles()
-}
+
 
 function renderEdges() {
   ctx.strokeStyle = MAIN_COL
@@ -245,4 +189,35 @@ function renderAngles() {
       ctx.strokeText(angleText, textX, textY)
     }
   })
+}
+
+canvas.onmouseup = (e: MouseEvent) => {
+  const idx = getSelectedNode(e.offsetX, e.offsetY)
+  const lastActive = getLastActiveNodeIndex()
+  nodes.forEach(node => node.active = false)
+  if (idx == undefined) {
+    if (nodes.length != 0) {
+      edges.push({
+        idxA: nodes.length,
+        idxB: lastActive as Id,
+      })
+    }
+    nodes.push({ x: e.offsetX, y: e.offsetY, active: true })
+  } else {
+    const edgeExists = edges.find((edge) => {
+      return (edge.idxA == idx && edge.idxB == lastActive) ||
+        (edge.idxA == lastActive && edge.idxB == idx)
+    })
+    if (!edgeExists) {
+      edges.push({
+        idxA: idx,
+        idxB: lastActive as Id
+      })
+    }
+    nodes[idx].active = true;
+  }
+  background(ctx, img, canvas.width, canvas.height)
+  renderEdges()
+  renderNodes()
+  renderAngles()
 }
