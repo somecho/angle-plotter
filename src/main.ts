@@ -16,7 +16,7 @@ if (window.innerWidth > 860) {
 } else {
   canvas.width = window.innerWidth * 0.95;
 }
-canvas.height = window.innerHeight - canvas.getBoundingClientRect().top - (window.innerHeight * 0.02)
+canvas.height = window.innerHeight - canvas.getBoundingClientRect().top - (window.innerHeight * 0.08)
 ctx.textBaseline = "middle"
 ctx.textAlign = "center"
 
@@ -24,17 +24,10 @@ ctx.textAlign = "center"
 const font = new FontFace('Silkscreen', 'url(assets/Silkscreen-Regular.ttf)')
 document.fonts.add(font)
 font.load().then(() => {
-  console.log("LOAD SILKSCREEN")
+  ctx.font = "14px Silkscreen"
 })
 
-ctx.font = "14px Silkscreen"
-
-document.fonts.onloadingdone = function () {
-  console.log("FONTS FINISHED LOADING")
-}
-
-
-canvas.addEventListener('mouseup', onMouseUp)
+canvas.onmouseup = onMouseUp
 setup()
 
 
