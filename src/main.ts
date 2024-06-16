@@ -24,6 +24,13 @@ ctx.font = "14px Silkscreen"
 canvas.addEventListener('mouseup', onMouseUp)
 setup()
 
+document.querySelector("#clear-btn")?.addEventListener("click", () => {
+  nodes = []
+  edges = []
+  setup()
+
+})
+
 function getImageOrientation(img: HTMLImageElement): Orientation {
   return img.width > img.height ? Orientation.Landscape : Orientation.Portrait
 }

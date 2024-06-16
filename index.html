@@ -29,6 +29,11 @@
     canvas {
       border: 1px solid lightgray;
     }
+
+    #controls {
+      display: flex;
+      gap: 8px;
+    }
   </style>
 </head>
 
@@ -41,7 +46,10 @@
       point to make it active to continue drawing segments from there. Upload an
       image to use as a background.
     </p>
-    <input type="file" id="upload-btn" />
+    <div id="controls">
+      <button id="clear-btn">clear points</button>
+      <input type="file" id="upload-btn" />
+    </div>
     <div id="app"></div>
   </div>
 
