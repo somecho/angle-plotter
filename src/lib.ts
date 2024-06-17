@@ -1,3 +1,5 @@
+import { RECT_SIZE } from "./constants"
+
 export function initializeCanvasSize(canvas: HTMLCanvasElement) {
     const ww = window.innerWidth
     const wh = window.innerHeight
@@ -34,4 +36,25 @@ export function edgeExists(allEdges: Edge[], idxA: Id, idxB: Id): boolean {
             (edge.idxA == idxB && edge.idxB == idxA)
     })
     return edgeExists != undefined
+}
+
+export function getSelectedNode(nodes: GraphNode[], mouseX: number, mouseY: number): Id | undefined {
+    for (let i = 0; i < nodes.length; i++) {
+        let { x, y } = nodes[i]
+        const dx = Math.abs(x - mouseX)
+        const dy = Math.abs(y - mouseY)
+        if (dx < (RECT_SIZE * 0.5) && dy < (RECT_SIZE * 0.5)) {
+            return i
+        }
+    }
+    return undefined
+}
+
+export function getLastActiveNodeIndex(nodes: GraphNode[]): Id | undefined {
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].active) {
+      return i
+    }
+  }
+  return undefined
 }

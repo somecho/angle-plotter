@@ -1,12 +1,10 @@
-import { background, edgeExists, initializeCanvasSize, initializeContext, initializeTextAttributes } from "./lib";
+import { MAIN_COL, RECT_SIZE } from "./constants";
+import { background, edgeExists, getLastActiveNodeIndex, getSelectedNode, initializeCanvasSize, initializeContext, initializeTextAttributes } from "./lib";
 
 // GLOBALS ////////////////////////////////////////////////////////////////////
-const RECT_SIZE = 6;
-const MAIN_COL = "#fa0a76"
 let nodes: GraphNode[] = [];
 let edges: Edge[] = [];
 let img = new Image();
-
 
 // DOM AND CANVAS SETUP ///////////////////////////////////////////////////////
 const canvas = document.createElement("canvas")
@@ -53,26 +51,7 @@ uploadBtn.onchange = (e) => {
   reader.readAsDataURL((target.files as FileList)[0])
 }
 
-function getSelectedNode(mouseX: number, mouseY: number): Id | undefined {
-  for (let i = 0; i < nodes.length; i++) {
-    let { x, y } = nodes[i]
-    const dx = Math.abs(x - mouseX)
-    const dy = Math.abs(y - mouseY)
-    if (dx < (RECT_SIZE * 0.5) && dy < (RECT_SIZE * 0.5)) {
-      return i
-    }
-  }
-  return undefined
-}
 
-function getLastActiveNodeIndex(): Id | undefined {
-  for (let i = 0; i < nodes.length; i++) {
-    if (nodes[i].active) {
-      return i
-    }
-  }
-  return undefined
-}
 
 function findPivots() {
   return nodes
@@ -192,15 +171,15 @@ function renderAngles() {
 }
 
 canvas.onmouseup = (e: MouseEvent) => {
-  const idx = getSelectedNode(e.offsetX, e.offsetY)
-  const lastActive = getLastActiveNodeIndex()
-  nodes.forEach(node => node.active = false)
+  const idx = getSelectedNode(nodes, e.offsetX, e.offsetY)
+  const lastActive = getLastActiveNodeIndex(nodes)
   if (idx == undefined) {
     if (nodes.length != 0) {
       edges.push({
         idxA: nodes.length,
         idxB: lastActive as Id,
       })
+      nodes[lastActive as Id].active = false
     }
     nodes.push({ x: e.offsetX, y: e.offsetY, active: true })
   } else {
@@ -210,6 +189,7 @@ canvas.onmouseup = (e: MouseEvent) => {
         idxB: lastActive as Id
       })
     }
+    nodes[lastActive as Id].active = false
     nodes[idx].active = true;
   }
   background(ctx, img, canvas.width, canvas.height)
