@@ -26,3 +26,12 @@ export function background(context: CanvasRenderingContext2D, image: HTMLImageEl
         context.drawImage(image, 0, 0, width, height)
     }
 }
+
+/** Checks whether an edge with the given node IDs already exist in edge array */
+export function edgeExists(allEdges: Edge[], idxA: Id, idxB: Id): boolean {
+    const edgeExists = allEdges.find((edge) => {
+        return (edge.idxA == idxA && edge.idxB == idxB) ||
+            (edge.idxA == idxB && edge.idxB == idxA)
+    })
+    return edgeExists != undefined
+}

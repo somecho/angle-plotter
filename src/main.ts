@@ -1,4 +1,4 @@
-import { background, initializeCanvasSize, initializeContext, initializeTextAttributes } from "./lib";
+import { background, edgeExists, initializeCanvasSize, initializeContext, initializeTextAttributes } from "./lib";
 
 // GLOBALS ////////////////////////////////////////////////////////////////////
 const RECT_SIZE = 6;
@@ -204,11 +204,7 @@ canvas.onmouseup = (e: MouseEvent) => {
     }
     nodes.push({ x: e.offsetX, y: e.offsetY, active: true })
   } else {
-    const edgeExists = edges.find((edge) => {
-      return (edge.idxA == idx && edge.idxB == lastActive) ||
-        (edge.idxA == lastActive && edge.idxB == idx)
-    })
-    if (!edgeExists) {
+    if (!edgeExists(edges, idx, lastActive as Id)) {
       edges.push({
         idxA: idx,
         idxB: lastActive as Id
