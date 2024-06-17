@@ -14,6 +14,10 @@ Features:
 
 On the 7th of June I had a bike crash and broke my elbow. To help journal my recovery, I wanted something to measure the angle of my elbow flexion. A bit of a niche use case, but as you can see, it's nice for measuring bike frame geometry too, albeit roughly.
 
+## Developing
+
+Use `npx vite .` to start a dev server and `npx vite build .` to build for release.
+
 ---
 
 # Todo 
