@@ -4,6 +4,7 @@ import { background, edgeExists, getLastActiveNodeIndex, getSelectedNode, initia
 // GLOBALS ////////////////////////////////////////////////////////////////////
 let nodes: GraphNode[] = [];
 let edges: Edge[] = [];
+let stack: { edges: Edge[], nodes: GraphNode[] }[] = [{ edges: [], nodes: [] }]
 let img = new Image();
 
 // DOM AND CANVAS SETUP ///////////////////////////////////////////////////////
@@ -16,11 +17,13 @@ initializeContext(ctx)
 // EVENTS /////////////////////////////////////////////////////////////////////
 const clearBtn = document.querySelector("#clear-btn") as HTMLElement
 const saveBtn = document.querySelector("#save-btn") as HTMLElement
+const undoBtn = document.querySelector("#undo-btn") as HTMLElement
 const uploadBtn = document.querySelector("#upload-btn") as HTMLElement
 
 clearBtn.onclick = () => {
   nodes = []
   edges = []
+  stack = [{ edges: [], nodes: [] }]
   background(ctx, img, canvas.width, canvas.height)
 }
 
@@ -29,6 +32,17 @@ saveBtn.onclick = () => {
   link.download = 'image.png'
   link.href = canvas.toDataURL("image/png")
   link.click()
+}
+undoBtn.onclick = () => {
+  if (stack.length > 1) {
+    stack.pop()
+    nodes = Array.from(stack[stack.length - 1].nodes)
+    edges = Array.from(stack[stack.length - 1].edges)
+  }
+  background(ctx, img, canvas.width, canvas.height)
+  renderEdges()
+  renderNodes()
+  renderAngles()
 }
 
 uploadBtn.onchange = (e) => {
@@ -51,8 +65,6 @@ uploadBtn.onchange = (e) => {
   reader.readAsDataURL((target.files as FileList)[0])
 }
 
-
-
 function findPivots() {
   return nodes
     .map((_, i) => ({
@@ -61,8 +73,6 @@ function findPivots() {
     }))
     .filter(group => group.edges.length > 1)
 }
-
-
 
 function renderEdges() {
   ctx.strokeStyle = MAIN_COL
@@ -192,6 +202,7 @@ canvas.onmouseup = (e: MouseEvent) => {
     nodes[lastActive as Id].active = false
     nodes[idx].active = true;
   }
+  stack.push({ edges: Array.from(edges), nodes: Array.from(nodes) })
   background(ctx, img, canvas.width, canvas.height)
   renderEdges()
   renderNodes()
